@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vijay's Naturewatch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #1e1e1e;
+      --surface: #2a2a2a;
+      --border: #383838;
+      --text-primary: #f0ece4;
+      --text-secondary: #9e9e9e;
+      --accent: #c9a84c;
+      --overlay: rgba(0, 0, 0, 0.92);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-weight: 400;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    /* ── Masthead ─────────────────────────────────────────── */
+
+    #masthead {
+      text-align: center;
+      padding: 4rem 2rem 2.5rem;
+    }
+
+    #site-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text-primary);
+    }
+
+    #site-tagline {
+      margin-top: 0.6rem;
+      font-size: 0.85rem;
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    /* ── Tab nav ──────────────────────────────────────────── */
+
+    #tab-nav {
+      display: flex;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
+      margin: 0 2rem 2.5rem;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.8rem 2.2rem;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s ease;
+    }
+
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform 0.25s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active::after {
+      transform: scaleX(1);
+    }
+
+    /* ── Photo grid ───────────────────────────────────────── */
+
+    .tab-panel {
+      display: none;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      padding: 0 2rem 5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .tab-panel.active {
+      display: grid;
+    }
+
+    .photo-card {
+      aspect-ratio: 3 / 2;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.35s ease, opacity 0.3s ease;
+    }
+
+    .photo-card:hover img {
+      transform: scale(1.04);
+    }
+
+    /* ── Lightbox ─────────────────────────────────────────── */
+
+    #lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--overlay);
+      cursor: pointer;
+    }
+
+    #lightbox.hidden {
+      display: none;
+    }
+
+    #lightbox-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 90vw;
+      max-height: 90vh;
+    }
+
+    #lightbox-img {
+      max-width: 90vw;
+      max-height: 80vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    #lightbox-caption {
+      text-align: center;
+      padding: 1.25rem 0 0.5rem;
+    }
+
+    #lightbox-species {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.35rem;
+      font-weight: 400;
+      color: var(--text-primary);
+      margin-bottom: 0.3rem;
+    }
+
+    #lightbox-location {
+      font-size: 0.8rem;
+      font-weight: 300;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    /* ── Responsive breakpoints ───────────────────────────── */
+
+    @media (max-width: 1100px) {
+      .tab-panel {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .tab-panel {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 0 1rem 3rem;
+      }
+
+      #masthead {
+        padding: 3rem 1.5rem 2rem;
+      }
+
+      #tab-nav {
+        margin: 0 1rem 2rem;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .tab-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header id="masthead">
+    <h1 id="site-title">Vijay's Naturewatch</h1>
+    <p id="site-tagline">Wildlife photography from India</p>
+  </header>
+
+  <nav id="tab-nav">
+    <button class="tab-btn active" data-tab="birds">Birds</button>
+    <button class="tab-btn" data-tab="mammals">Mammals</button>
+  </nav>
+
+  <main id="gallery-container">
+    <section id="tab-birds" class="tab-panel active"></section>
+    <section id="tab-mammals" class="tab-panel"></section>
+  </main>
+
+  <div id="lightbox" class="hidden">
+    <div id="lightbox-content">
+      <img id="lightbox-img" src="" alt="">
+      <div id="lightbox-caption">
+        <p id="lightbox-species"></p>
+        <p id="lightbox-location"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const photos = {
+      birds: [
+        { file: 'birds/Cinnamon Bittern_Female_In Flight_UpW_H2.jpg',                                          species: 'Cinnamon Bittern',        location: 'Telangana, India' },
+        { file: 'birds/Common Snipe_In Flight_UpW_Pashamylaram_Feb 2026_H2.jpg',                               species: 'Common Snipe',            location: 'Pashamylaram, India' },
+        { file: 'birds/Eurasian Moorhen_H_3.jpg',                                                              species: 'Eurasian Moorhen',        location: 'Telangana, India' },
+        { file: 'birds/Eurasian Sparrowhawk_Female_In Flight_UnW_H3.jpg',                                      species: 'Eurasian Sparrowhawk',    location: 'Telangana, India' },
+        { file: 'birds/Greater Painted Snipe_Female_In Flight_Banking_UpW_GBG_3.jpg',                          species: 'Greater Painted Snipe',   location: 'Telangana, India' },
+        { file: 'birds/Greater oucal_In Flight_H1_WNR.jpg',                                                   species: 'Greater Coucal',          location: 'Telangana, India' },
+        { file: 'birds/Green-tailed Sunbird_Nectaring_V2.jpg',                                                 species: 'Green-tailed Sunbird',    location: 'Telangana, India' },
+        { file: 'birds/Indian Eagle Owl_In Flight_Landing_FWS_H1.JPG',                                        species: 'Indian Eagle Owl',        location: 'Telangana, India' },
+        { file: 'birds/Painted Fancolin_In Flight_Yenkathala_2023_H1.jpg',                                     species: 'Painted Francolin',       location: 'Yenkathala, India' },
+        { file: 'birds/Pallid Harrier_Sub Adult Male_In Flight_H2.jpg',                                        species: 'Pallid Harrier',          location: 'Telangana, India' },
+        { file: 'birds/Pallid Harrier_Sub Adult Male_In Flight_V1.jpg',                                        species: 'Pallid Harrier',          location: 'Telangana, India' },
+        { file: 'birds/Pallid Harrier_Sub Adult Male_Take-off_H2.jpg',                                         species: 'Pallid Harrier',          location: 'Telangana, India' },
+        { file: 'birds/Pied Kingfisher_Male_Landing_UnW_Rudraram_Jan 2026_H1.jpg',                             species: 'Pied Kingfisher',         location: 'Rudraram, India' },
+        { file: 'birds/Pied Kingfisher_with dish_Landing_Branch removed_UnW_Rudraram_Jan 2026_H3.jpg',         species: 'Pied Kingfisher',         location: 'Rudraram, India' },
+        { file: 'birds/Pied Kingfisher_with dish_Landing_UnW_Rudraram_Jan 2026_H4.jpg',                        species: 'Pied Kingfisher',         location: 'Rudraram, India' },
+        { file: 'birds/Saker Falcon_In Flight_Dec 2024.jpg',                                                   species: 'Saker Falcon',            location: 'Telangana, India' },
+        { file: 'birds/Sirkeer Malkoha_In Flight_PS Edited_H2.jpg',                                            species: 'Sirkeer Malkoha',         location: 'Telangana, India' },
+        { file: 'birds/Streak-throated Swallow_In Flight_UW.jpg',                                              species: 'Streak-throated Swallow', location: 'Telangana, India' },
+        { file: 'birds/Verditer Flycatcher_In Flight_UW_1_H.jpg',                                              species: 'Verditer Flycatcher',     location: 'Telangana, India' },
+        { file: 'birds/Watercock_Male_Breeding Plumage_In Flight_UnW_H2.jpg',                                  species: 'Watercock',               location: 'Telangana, India' },
+        { file: 'birds/Watercock_Male_Breeding Plumage_In Flight_UpW_H1.jpg',                                  species: 'Watercock',               location: 'Telangana, India' },
+        { file: 'birds/Yellow Bittern_Female_In Flight_UpW_DBG_H1.jpg',                                        species: 'Yellow Bittern',          location: 'Telangana, India' },
+      ],
+      mammals: [
+        { file: 'mammals/Indian Fox_Male_H2.jpg',         species: 'Indian Fox',           location: 'Telangana, India' },
+        { file: 'mammals/Indian Grey Mongoose_H7.jpg',    species: 'Indian Grey Mongoose', location: 'Telangana, India' },
+      ]
+    };
+
+    function renderGrid(tabKey) {
+      const section = document.getElementById('tab-' + tabKey);
+      photos[tabKey].forEach(function(photo) {
+        const card = document.createElement('div');
+        card.className = 'photo-card';
+
+        const img = document.createElement('img');
+        img.src = photo.file;
+        img.alt = photo.species;
+        img.loading = 'lazy';
+
+        card.appendChild(img);
+        card.addEventListener('click', function() { openLightbox(photo); });
+        section.appendChild(card);
+      });
+    }
+
+    renderGrid('birds');
+    renderGrid('mammals');
+
+    // Tab switching
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    tabBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        tabBtns.forEach(function(b) { b.classList.remove('active'); });
+        tabPanels.forEach(function(p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Lightbox
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxSpecies = document.getElementById('lightbox-species');
+    const lightboxLocation = document.getElementById('lightbox-location');
+
+    function openLightbox(photo) {
+      lightboxImg.src = photo.file;
+      lightboxImg.alt = photo.species;
+      lightboxSpecies.textContent = photo.species;
+      lightboxLocation.textContent = photo.location;
+      lightbox.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lightbox.classList.add('hidden');
+      lightboxImg.src = '';
+      document.body.style.overflow = '';
+    }
+
+    lightbox.addEventListener('click', closeLightbox);
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeLightbox();
+    });
+  </script>
+
+</body>
+</html>
