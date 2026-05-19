@@ -238,11 +238,13 @@
   <nav id="tab-nav">
     <button class="tab-btn active" data-tab="birds">Birds</button>
     <button class="tab-btn" data-tab="mammals">Mammals</button>
+    <button class="tab-btn" data-tab="butterflies">Butterflies</button>
   </nav>
 
   <main id="gallery-container">
     <section id="tab-birds" class="tab-panel active"></section>
     <section id="tab-mammals" class="tab-panel"></section>
+    <section id="tab-butterflies" class="tab-panel"></section>
   </main>
 
   <div id="lightbox" class="hidden">
@@ -284,6 +286,17 @@
       mammals: [
         { file: 'mammals/Indian Fox_Male_H2.jpg',         species: 'Indian Fox',           location: 'Telangana, India' },
         { file: 'mammals/Indian Grey Mongoose_H7.jpg',    species: 'Indian Grey Mongoose', location: 'Telangana, India' },
+      ],
+      butterflies: [
+        { file: 'butterflies/Commander_UN_00000002 2.JPG',                    species: 'Commander',                    location: 'Bangalore, Karnataka' },
+        { file: 'butterflies/Commander_UP_00000004.JPG',                      species: 'Commander',                    location: 'Bangalore, Karnataka' },
+        { file: 'butterflies/Common Jezabel_UN_00000002.JPG',                 species: 'Common Jezebel',               location: 'Hyderabad, Telangana' },
+        { file: 'butterflies/Crimson Rose_00000001.JPG',                      species: 'Crimson Rose',                 location: 'Khammam, Telangana' },
+        { file: 'butterflies/Marbled Skipper.JPG',                            species: 'Marbled Skipper',              location: 'Bangalore, Karnataka' },
+        { file: 'butterflies/Monkey Puzzle_UN_00000005.JPG',                  species: 'Monkey Puzzle',                location: 'Bangalore, Karnataka' },
+        { file: 'butterflies/Oriental Common Pierrot_DSF_00000001.JPG',       species: 'Oriental Common Pierrot',      location: 'Bangalore, Karnataka' },
+        { file: 'butterflies/Psyche_00000001.JPG',                            species: 'Psyche',                       location: 'Khammam, Telangana' },
+        { file: 'butterflies/Suffused Double-banded Judy_00000002.JPG',       species: 'Suffused Double-banded Judy',  location: 'Bangalore, Karnataka' },
       ]
     };
 
@@ -306,6 +319,7 @@
 
     renderGrid('birds');
     renderGrid('mammals');
+    renderGrid('butterflies');
 
     // Tab switching
     const tabBtns = document.querySelectorAll('.tab-btn');
