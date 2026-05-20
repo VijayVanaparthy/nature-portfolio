@@ -166,14 +166,25 @@
       flex-direction: column;
       align-items: center;
       max-width: 90vw;
-      max-height: 90vh;
     }
+
+    #lightbox-img-wrap {
+      line-height: 0;
+      flex-shrink: 0;
+      overflow: hidden;
+      cursor: grab;
+    }
+
+    #lightbox-img-wrap.dragging { cursor: grabbing; }
 
     #lightbox-img {
       max-width: 90vw;
-      max-height: 80vh;
+      max-height: 70vh;
       object-fit: contain;
       display: block;
+      transform-origin: center center;
+      user-select: none;
+      pointer-events: none;
     }
 
     #lightbox-caption {
@@ -217,6 +228,34 @@
     .lightbox-arrow:hover { opacity: 1; }
     #lightbox-prev { left: 0; }
     #lightbox-next { right: 0; }
+
+
+    #zoom-controls {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .zoom-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      width: 2.2rem;
+      height: 2.2rem;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: color 0.2s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .zoom-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--accent);
+    }
 
     /* ── Responsive breakpoints ───────────────────────────── */
 
@@ -276,10 +315,17 @@
     <button id="lightbox-prev" class="lightbox-arrow">&#8249;</button>
     <button id="lightbox-next" class="lightbox-arrow">&#8250;</button>
     <div id="lightbox-content">
-      <img id="lightbox-img" src="" alt="">
+      <div id="lightbox-img-wrap">
+        <img id="lightbox-img" src="" alt="">
+      </div>
       <div id="lightbox-caption">
         <p id="lightbox-species"></p>
         <p id="lightbox-location"></p>
+        <div id="zoom-controls">
+          <button class="zoom-btn" id="zoom-out"   title="Zoom out">−</button>
+          <button class="zoom-btn" id="zoom-reset" title="Reset zoom">⊙</button>
+          <button class="zoom-btn" id="zoom-in"    title="Zoom in">+</button>
+        </div>
       </div>
     </div>
   </div>
@@ -430,6 +476,7 @@
     // Lightbox
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxWrap = document.getElementById('lightbox-img-wrap');
     const lightboxSpecies = document.getElementById('lightbox-species');
     const lightboxLocation = document.getElementById('lightbox-location');
     const prevBtn = document.getElementById('lightbox-prev');
@@ -438,7 +485,35 @@
     let currentPhotos = [];
     let currentIndex = 0;
 
+    // Zoom / pan state
+    let zScale = 1;
+    let panX = 0;
+    let panY = 0;
+    let dragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let panStartX = 0;
+    let panStartY = 0;
+
+    function applyTransform() {
+      lightboxImg.style.transform = 'scale(' + zScale + ') translate(' + panX + 'px, ' + panY + 'px)';
+    }
+
+    function resetZoom() {
+      zScale = 1; panX = 0; panY = 0;
+      lightboxImg.style.transform = '';
+      lightboxWrap.style.cursor = 'default';
+    }
+
+    function clampPan() {
+      var maxPan = (zScale - 1) * lightboxImg.offsetWidth / (2 * zScale);
+      var maxPanY = (zScale - 1) * lightboxImg.offsetHeight / (2 * zScale);
+      panX = Math.max(-maxPan, Math.min(maxPan, panX));
+      panY = Math.max(-maxPanY, Math.min(maxPanY, panY));
+    }
+
     function showPhoto(idx) {
+      resetZoom();
       const photo = currentPhotos[idx];
       lightboxImg.src = photo.file;
       lightboxImg.alt = photo.species;
@@ -449,16 +524,78 @@
 
     function openLightbox(arr, idx) {
       currentPhotos = arr;
-      showPhoto(idx);
       lightbox.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
+      showPhoto(idx);
     }
 
     function closeLightbox() {
+      resetZoom();
       lightbox.classList.add('hidden');
       lightboxImg.src = '';
       document.body.style.overflow = '';
     }
+
+    // Zoom buttons
+    document.getElementById('zoom-in').addEventListener('click', function(e) {
+      e.stopPropagation();
+      zScale = Math.min(5, parseFloat((zScale + 0.5).toFixed(1)));
+      lightboxWrap.style.cursor = 'grab';
+      clampPan();
+      applyTransform();
+    });
+
+    document.getElementById('zoom-out').addEventListener('click', function(e) {
+      e.stopPropagation();
+      zScale = Math.max(1, parseFloat((zScale - 0.5).toFixed(1)));
+      if (zScale === 1) { resetZoom(); return; }
+      clampPan();
+      applyTransform();
+    });
+
+    document.getElementById('zoom-reset').addEventListener('click', function(e) {
+      e.stopPropagation();
+      resetZoom();
+    });
+
+    // Scroll wheel zoom
+    lightboxWrap.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var delta = e.deltaY < 0 ? 0.3 : -0.3;
+      zScale = Math.max(1, Math.min(5, parseFloat((zScale + delta).toFixed(1))));
+      if (zScale === 1) { resetZoom(); return; }
+      lightboxWrap.style.cursor = 'grab';
+      clampPan();
+      applyTransform();
+    }, { passive: false });
+
+    // Drag to pan
+    lightboxWrap.addEventListener('mousedown', function(e) {
+      if (zScale <= 1) return;
+      e.preventDefault();
+      e.stopPropagation();
+      dragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      panStartX = panX;
+      panStartY = panY;
+      lightboxWrap.classList.add('dragging');
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      panX = panStartX + (e.clientX - dragStartX) / zScale;
+      panY = panStartY + (e.clientY - dragStartY) / zScale;
+      clampPan();
+      applyTransform();
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (!dragging) return;
+      dragging = false;
+      lightboxWrap.classList.remove('dragging');
+    });
 
     lightbox.addEventListener('click', closeLightbox);
     document.getElementById('lightbox-content').addEventListener('click', function(e) { e.stopPropagation(); });
@@ -478,6 +615,9 @@
       if (e.key === 'Escape') closeLightbox();
       if (e.key === 'ArrowLeft')  showPhoto((currentIndex - 1 + currentPhotos.length) % currentPhotos.length);
       if (e.key === 'ArrowRight') showPhoto((currentIndex + 1) % currentPhotos.length);
+      if (e.key === '+' || e.key === '=') document.getElementById('zoom-in').click();
+      if (e.key === '-') document.getElementById('zoom-out').click();
+      if (e.key === '0') document.getElementById('zoom-reset').click();
     });
   </script>
 
